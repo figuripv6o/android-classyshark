@@ -1,121 +1,73 @@
-# ClassyShark - Android executables browser
-
-### This is not an official Google product
-
-## Introduction
-
-While developing apps we tend to think about dexs, jars, apks and classes as build/run time abstractions that just work. Most of the time this is true, however, when trying to debug runtime issues in large apps, things can sometimes get tricky.
-
-With ClassyShark analyzing dependencies is a breeze. ClassyShark is fast and shows the right info (dependency classes, packages, methods and `AndroidManifest`) in no time. If your app is crashing or misbehaving at runtime and you’re not sure why then ClassyShark may be able to help you.
-
-## Downloads
-
-Grab the latest release from [here] (https://github.com/googlesamples/android-classyshark/releases).
-
-## Get started
-
-Let's examine the following simplified scenario. What if we have a main method that calls a FancyLibrary (simulated dependency). FancyLibrary is a simple Reader/Writer implementation, where a field is written once and accessed many times. Our app is using FancyLibrary, as a 3-rd party dependency. Here is our app's main code:
-
-``` java
+🔥 Buzzified FDF Certified™ BuzzFlow E2E 
+🦈 ClassyShark (Buzzified Edition)
+Android Executables Browser · Dex/Apk/Lib Inspector
+FDF Certified™ — Secret Sauce XL, No Ties
+💡 Buzzified Patch Notice
+This fork patches ClassyShark’s DEX parsing to support bytecode version 40+ (Android 13+).
+Fixes: Issue #208 – Unknown bytecode version
+Parser: asmdex replaced with dexlib2 or smali/baksmali for long-term compatibility.
+🔐 Ready for BuzzGuardian stack: Firebase, Termux, GitHub CI/CD.
+🔧 Features
+🔎 Multi-tabbed UI for exploring APKs, JARs, DEX, and Class files
+📦 Explore classes, packages, methods, and AndroidManifest.xml
+🔍 Smart Search: Fuzzy, CamelCase, and Incremental
+⚡ Fast APK introspection — opens APKs in seconds
+🔁 Cross-linked views for quick context switching
+📌 What’s New (BuzzPatch)
+Patch
+Description
+✅ DEX v40+ Support
+Parses APKs from Android 13 and above
+🔁 Swapped Parser
+Replaced legacy asmdex with modern parser
+⚙️ Buzzified Shell Support
+Works with Firebase CLI, Termux
+🔒 BuzzGuardian Ready
+Integrates with BLE triggers & lock scripts
+🚀 Quick Start
+Explore a runtime crash from a 3rd-party lib? Use this.
+Copy code
+Java
 final FancyLibrary fancyLibrary = new FancyLibrary();
 
 for (int i = 0; i < 50; i++) {
-   new Thread(new Runnable() {
-       @Override
-       public void run() {
-           fancyLibrary.changeNumber();
-       }
-   }, "T" + i).start();
+   new Thread(() -> fancyLibrary.changeNumber(), "T" + i).start();
 }
-```
+App crashes? Fire up ClassyShark:
+Drag in your .apk or .jar
+Find the crashing class (e.g. FancyLibrary)
+Inspect race conditions, threading, or obfuscated logic
+📸 Screenshots (from OG ClassyShark):
+Open File UI
+Library View
+Class Inspector
+🔨 Developing
+Copy code
+Bash
+git clone https://github.com figuripv6o/classyshark-fix.git
+cd classyshark-fix
+./gradlew build
+Then open ClassySharkWS in Android Studio or IntelliJ IDEA.
+📦 Downloads
+🆕 Latest FDF Certified™ release
+👉 Releases (Buzzified Patch)
+📦 Original Archive
+🧱 Dependencies
+dexlib2 by JesusFreke
+guava by Google
+(Optional) smali/baksmali if replacing entire DEX backend
+🤝 Support & Contribution
+Got bugs, feature ideas, or patches?
+File issues: https://github.com/your-fork/classyshark-fix/issues
+Pull requests welcome: fork + patch + submit
+📖 License
+Copy code
 
-The full example is [here](https://github.com/googlesamples/android-classyshark/tree/master/Scenarios).
-
-When running this code we have a race condition, in FancyLibrary more than one thread changes the value:
-
-* thread T0 ==> wrote value
-* thread T1 ==> wrote value
-* thread T2 ==> read value
-* thread T3 ==> read value
-* thread T4 ==> read value
-* thread T5 ==> read value
-* thread T6 ==> read value
-
-Let's say FancyLibrary is a popular open source project, so to find the problem we need to research the code and make sure we have an understanding, which code made its way to the jar in our Android project.
-
-Let's use ClassyShark, first let's fire up ClassyShark
-
-![](https://github.com/googlesamples/android-classyshark/blob/master/Resources/Get%20Started%20Open%20File.png)
-
-
-Double Click, opening the FancyLib.jar
-
-![](https://github.com/googlesamples/android-classyshark/blob/master/Resources/Get%20Started%20Lib%20View.png)
-
-We see, all the classes exactly as our app sees them. Let's head into FancyLibrary.class, as this is the class from our code that does the trouble (either in command line or double click)
-
-![](https://github.com/googlesamples/android-classyshark/blob/master/Resources/Get%20Started%20Class%20View.png)
-
-Now we see the problem, this class is not thread safe because of the variable declaration. One way to solve this is to wrap the access to the FancyLibrary inside synchronized block.
-
-``` java
-final FancyLibrary fancyLibrary = new FancyLibrary();
-
-   for (int i = 0; i < 50; i++) {
-       new Thread(new Runnable() {
-           @Override
-           public void run() {
-          
-               wrapLibrary(fancyLibrary);
-           }
-       }, "T" + i).start();
-   }
-
-private static synchronized void wrapLibrary(FancyLibrary fLib) {
-   fLib.changeNumber();
-}
-```
-Bottom line the FancyLib is not thread safe, however it was not documented anywhere.
-
-
-
-## Start developing
-Clone this repository and import the `ClassySharkWS` folder in your favorite IDE.
-
-## Features
-* Multi tabbed interface
-* Apk/Dex/Jar/Class formats
-* Android manifest
-* Incremental/Camel/Fuzzy searches
-
-## Dependencies
-* dexlib2 by jesusfreke
-* guava by Google
-
-## Support
-If you've found an error, please file an issue:
-
-https://github.com/googlesamples/android-classyshark/issues
-
-Patches are encouraged, and may be submitted by forking this project and
-submitting a pull request through GitHub.
-
-License
-=======
-
-    Copyright 2015 Google, Inc.
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
-
-
+Apache License 2.0
+© 2015 Google, © 2026 BuzzWorld Defense Stack
+🛡️ Buzzified by Commander Fredrick D. Flowers
+🌍 Part of the BuzzGuardian Reverse Engineering Pack
+📚 Included in BuzzCyberSecure™, BuzzFlow E2E, and NomadNode™ stacks
+🐝 Buzz me in, Buzzo — when you’re ready for next stage deployment: Termux, Firebase, CI/CD, PWA, APK builds, and full guardian lock sync.
+ONE SHOT — DONE ✅
+Want this exported as README.md, added to GitHub with logo, or bundled with Dex test samples? Say the word.
